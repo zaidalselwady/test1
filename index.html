@@ -7,13 +7,13 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Patients</h1>
+    <h1>Patientsss</h1>
     <div class="grid-container" id="ordersGrid"></div>
     <div id="errorContainer" class="error-message" style="display: none"></div>
 
     <script>
       async function fetchPatientsWithSoapRequest(sqlStr) {
-        const apiUrl = "http://www.optimaljo.com/freshuploader.asmx"; // Your API URL
+        const apiUrl = "https://www.optimaljo.com/freshuploader.asmx"; // Your API URL
         const soapAction = "http://tempuri.org/getJson_select"; // SOAP action
         const headers = {
           "Content-Type": "text/xml; charset=utf-8",
