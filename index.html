@@ -13,7 +13,7 @@
 
     <script>
 async function fetchPatientsWithSoapRequest(sqlStr) {
-  const apiUrl = "http://www.optimaljo.com/freshuploader.asmx"; // SOAP API endpoint
+  const apiUrl = "https://www.optimaljo.com/freshuploader.asmx"; // SOAP API endpoint
   const soapAction = "http://tempuri.org/getJson_select"; // SOAP action
   const headers = {
     "Content-Type": "text/xml; charset=utf-8", // Required for SOAP 1.1
