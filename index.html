@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orders Grid</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Patients</h1>
+    <div class="grid-container" id="ordersGrid"></div>
+    <div id="errorContainer" class="error-message" style="display: none"></div>
+
+    <script>
+      async function fetchPatientsWithSoapRequest(sqlStr) {
+        const apiUrl = "http://www.optimaljo.com/freshuploader.asmx"; // Your API URL
+        const soapAction = "http://tempuri.org/getJson_select"; // SOAP action
+        const headers = {
+          "Content-Type": "text/xml; charset=utf-8",
+          SOAPAction: soapAction,
+        };
+
+        // SOAP request body
+        const body = `
+    <?xml version="1.0" encoding="utf-8"?>
+    <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+      <soap:Body>
+        <getJson_select xmlns="http://tempuri.org/">
+          <password>OptimalPass_optimaljo05</password>
+          <SQlStr>${sqlStr}</SQlStr>
+        </getJson_select>
+      </soap:Body>
+    </soap:Envelope>
+  `;
+
+        try {
+          // Make the SOAP request
+          const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: headers,
+            body: body,
+          });
+
+          // Check if the response is OK
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+
+          // Parse the response as text
+          const responseText = await response.text();
+          console.log("SOAP Response:", responseText); // Log the response for debugging
+
+          // Parse the XML response
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(responseText, "text/xml");
+
+          // Extract the result from the XML
+          const resultElement = xmlDoc.getElementsByTagName(
+            "getJson_selectResult"
+          )[0];
+          if (resultElement) {
+            const jsonString = resultElement.textContent;
+
+            // Parse the JSON string
+            const parsedData = JSON.parse(jsonString);
+
+            // Check if the parsed data is an array
+            if (Array.isArray(parsedData)) {
+              // Handle the array of patient data
+              console.log("Patients Data:", parsedData);
+              displayPatients(parsedData); // Display the data
+            } else if (typeof parsedData === "number") {
+              // Handle numeric result (e.g., count)
+              console.log("Numeric Result:", parsedData);
+            } else {
+              console.error("Unexpected response format:", parsedData);
+              displayError("Unexpected response format.");
+            }
+          } else {
+            displayError("No result found in the response.");
+          }
+        } catch (error) {
+          console.error("Error fetching SOAP request:", error);
+          displayError(`Error fetching SOAP request: ${error.message}`);
+        }
+      }
+
+      // Function to display patients
+      function displayPatients(patients) {
+        const grid = document.getElementById("ordersGrid");
+        grid.innerHTML = ""; // Clear previous content
+
+        if (patients.length === 0) {
+          grid.innerHTML = "<p>No patients found.</p>";
+          return;
+        }
+
+        // Display each patient in the grid
+        patients.forEach((patient) => {
+          const patientDiv = document.createElement("div");
+          patientDiv.className = "order-card";
+          patientDiv.innerHTML = `
+      <h3>Patient #${patient.Patient_Id || "N/A"}</h3>
+      <p><strong>Name:</strong> ${patient.FirstName || "N/A"} ${
+            patient.MiddleName || ""
+          } ${patient.LastName || "N/A"}</p>
+      <p><strong>Birth Date:</strong> ${patient.birthDate || "N/A"}</p>
+      <p><strong>Address:</strong> ${patient.address || "N/A"}</p>
+      <p><strong>Phone:</strong> ${patient.phone || "N/A"}</p>
+      <p><strong>Email:</strong> ${patient.email || "N/A"}</p>
+      <p><strong>School:</strong> ${patient.school || "N/A"}</p>
+      <p><strong>Mother's Name:</strong> ${patient.motherName || "N/A"}</p>
+      <p><strong>Creation Date:</strong> ${patient.CreationDate || "N/A"}</p>
+      <p><strong>On Clinic:</strong> ${patient.isOnClinic || "N/A"}</p>
+      <p><strong>Status:</strong> ${patient.Status || "N/A"}</p>
+    `;
+          grid.appendChild(patientDiv);
+        });
+      }
+
+      // Function to display errors
+      function displayError(message) {
+        const errorContainer = document.getElementById("errorContainer");
+        errorContainer.textContent = message;
+        errorContainer.style.display = "block"; // Show the error message
+      }
+
+      // Call the function when the page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        fetchPatientsWithSoapRequest("SELECT * FROM Patients_Info");
+      });
+    </script>
+  </body>
+</html>
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orders Grid</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f4f4f4;
+        animation: fadeIn 1s ease-in;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+      }
+      .order-card {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        transform: scale(0.9);
+        transition: transform 0.3s ease-in-out;
+        position: relative;
+        overflow: hidden;
+      }
+      .order-card:hover {
+        transform: scale(1);
+      }
+      .order-card h3 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+      .order-card p {
+        margin: 5px 0;
+      }
+      .order-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(90deg, #ff7eb3, #ff758c);
+      }
+      .error-message {
+        color: red;
+        margin: 20px 0;
+        padding: 10px;
+        border: 1px solid red;
+        background-color: #ffe6e6;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Patients</h1>
+    <div class="grid-container" id="ordersGrid"></div>
+    <div id="errorContainer" class="error-message" style="display: none"></div>
+
+    <script>
+      async function fetchPatients(sqlStr) {
+        const proxyUrl = "https://cors-anywhere.herokuapp.com/"; // Proxy URL
+        const apiUrl = "http://www.optimaljo.com/freshuploader.asmx"; // Your API URL
+        const soapAction = "http://tempuri.org/getJson_select"; // SOAP action
+        const headers = {
+          "Content-Type": "text/xml; charset=utf-8",
+          SOAPAction: soapAction,
+        };
+
+        // SOAP request body
+        const body = `
+    <?xml version="1.0" encoding="utf-8"?>
+    <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+      <soap:Body>
+        <getJson_select xmlns="http://tempuri.org/">
+          <password>OptimalPass_optimaljo05</password>
+          <SQlStr>${sqlStr}</SQlStr>
+        </getJson_select>
+      </soap:Body>
+    </soap:Envelope>
+  `;
+
+        try {
+          // Make the SOAP request through the proxy
+          const response = await fetch(proxyUrl + apiUrl, {
+            method: "POST",
+            headers: headers,
+            body: body,
+          });
+
+          // Check if the response is OK
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+
+          // Parse the response as text
+          const responseText = await response.text();
+          console.log("SOAP Response:", responseText); // Log the response for debugging
+
+          // Parse the XML response
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(responseText, "text/xml");
+
+          // Extract the result from the XML
+          const resultElement = xmlDoc.getElementsByTagName(
+            "getJson_selectResult"
+          )[0];
+          if (resultElement) {
+            const jsonString = resultElement.textContent;
+            const patients = JSON.parse(jsonString); // Parse the JSON string
+            parseAndDisplayOrders(patients); // Display the data
+          } else {
+            displayError("No result found in the response.");
+          }
+        } catch (error) {
+          console.error("Error fetching SOAP request:", error);
+          displayError(`Error fetching SOAP request: ${error.message}`);
+        }
+      }
+    </script>
+  </body>
+</html> -->
