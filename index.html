@@ -14,7 +14,7 @@
     <script>
 async function fetchPatientsWithSoapRequest(sqlStr) {
   const apiUrl = "https://www.optimaljo.com/freshuploader.asmx"; // SOAP API endpoint
-  const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+ const proxyUrl = "https://corsproxy.io/?"; 
   const soapAction = "http://tempuri.org/getJson_select"; // SOAP action
   const headers = {
     "Content-Type": "text/xml; charset=utf-8", // Required for SOAP 1.1
