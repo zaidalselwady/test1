@@ -13,7 +13,7 @@
 
     <script>
       async function fetchPatientsWithSoapRequest(sqlStr) {
-        const apiUrl = "https://www.optimaljo.com/freshuploader.asmx"; // Your API URL
+        const apiUrl = Uri.parse('http://www.optimaljo.com/freshuploader.asmx'); // Your API URL
         const soapAction = "http://tempuri.org/getJson_select"; // SOAP action
          const proxyUrl = "https://cors-anywhere.herokuapp.com/"; 
         const headers = {
