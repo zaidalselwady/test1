@@ -36,7 +36,7 @@ async function fetchPatientsWithSoapRequest(sqlStr) {
 
   try {
     // Make the SOAP request
-    const response = await fetch(proxyUrl + apiUrl, {
+    const response = await fetch(proxyUrl + encodeURIComponent(apiUrl), {
       method: "POST",
       headers: headers,
       body: body,
