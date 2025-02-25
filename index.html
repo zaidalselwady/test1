@@ -14,7 +14,7 @@
     <script>
       async function fetchPatients() {
           try {
-              const response = await fetch('http://localhost:5238/api/patients');
+              const response = await fetch('http://192.168.43.148:5238/api/patients');
               if (!response.ok) {
                   throw new Error(`HTTP error! Status: ${response.status}`);
               }
